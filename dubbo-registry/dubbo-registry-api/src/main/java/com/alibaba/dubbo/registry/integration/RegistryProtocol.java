@@ -136,7 +136,7 @@ public class RegistryProtocol implements Protocol {
 
         URL registryUrl = getRegistryUrl(originInvoker);
 
-        //registry provider
+        //registry provider 注册 provider
         final Registry registry = getRegistry(originInvoker);
         final URL registeredProviderUrl = getRegisteredProviderUrl(originInvoker);
 

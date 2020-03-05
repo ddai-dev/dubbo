@@ -14,22 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.demo.provider;
+package com.alibaba.dubbo.demo;
 
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+public interface BarService {
 
-/**
- * multicast registry set the jvm
- * -Djava.net.preferIPv4Stack=true
- */
-public class Provider {
+    String bar1(String name);
 
-    public static void main(String[] args) throws Exception {
-
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"META-INF/spring/dubbo-demo-provider.xml"});
-        context.start();
-
-        System.in.read(); // press any key to exit
-    }
+    String bar2(String name);
 
 }

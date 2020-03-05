@@ -49,6 +49,7 @@ import com.alibaba.dubbo.common.extensionloader.ext9_empty.impl.Ext9EmptyImpl;
 import com.alibaba.dubbo.common.extensionloader.injection.InjectExt;
 import com.alibaba.dubbo.common.extensionloader.injection.impl.InjectExtImpl;
 
+import javassist.util.proxy.ProxyFactory;
 import junit.framework.Assert;
 import org.junit.Test;
 
@@ -427,5 +428,6 @@ public class ExtensionLoaderTest {
         org.junit.Assert.assertNull(injectExtImpl.getSimpleExt1());
         org.junit.Assert.assertNull(injectExtImpl.getGenericType());
     }
+
 
 }

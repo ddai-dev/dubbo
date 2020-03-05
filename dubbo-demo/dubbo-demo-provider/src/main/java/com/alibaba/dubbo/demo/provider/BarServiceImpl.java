@@ -16,20 +16,22 @@
  */
 package com.alibaba.dubbo.demo.provider;
 
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import com.alibaba.dubbo.demo.BarService;
+import com.alibaba.dubbo.demo.DemoService;
+import com.alibaba.dubbo.rpc.RpcContext;
 
-/**
- * multicast registry set the jvm
- * -Djava.net.preferIPv4Stack=true
- */
-public class Provider {
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
-    public static void main(String[] args) throws Exception {
+public class BarServiceImpl implements BarService {
 
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(new String[]{"META-INF/spring/dubbo-demo-provider.xml"});
-        context.start();
-
-        System.in.read(); // press any key to exit
+    @Override
+    public String bar1(String name) {
+        return "Hello bar1";
     }
 
+    @Override
+    public String bar2(String name) {
+        return "Hello bar2";
+    }
 }

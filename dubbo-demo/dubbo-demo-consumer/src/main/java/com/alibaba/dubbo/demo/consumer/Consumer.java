@@ -21,7 +21,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class Consumer {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         //Prevent to get IPV6 address,this way only work in debug mode
         //But you can pass use -Djava.net.preferIPv4Stack=true,then it work well whether in debug mode or not
         System.setProperty("java.net.preferIPv4Stack", "true");
@@ -29,16 +29,18 @@ public class Consumer {
         context.start();
         DemoService demoService = (DemoService) context.getBean("demoService"); // get remote service proxy
 
-        while (true) {
-            try {
-                Thread.sleep(1000);
-                String hello = demoService.sayHello("world"); // call remote method
-                System.out.println(hello); // get result
+        try {
+            String hello = demoService.sayHello("world"); // call remote method
+            System.out.println(hello); // get result
 
-            } catch (Throwable throwable) {
-                throwable.printStackTrace();
-            }
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
         }
+        Thread.sleep(100000);
+
+//        while (true) {
+//
+//        }
 
     }
 }

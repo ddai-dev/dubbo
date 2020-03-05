@@ -273,7 +273,7 @@ public abstract class AbstractRegistry implements Registry {
     @Override
     public List<URL> lookup(URL url) {
         List<URL> result = new ArrayList<URL>();
-        // 获得该消费者url订阅的 所有被通知的 服务URL集合
+        // 获取注册信息中的分类服务列表信息
         Map<String, List<URL>> notifiedUrls = getNotified().get(url);
         // 判断该消费者是否订阅服务
         if (notifiedUrls != null && notifiedUrls.size() > 0) {
@@ -287,6 +287,7 @@ public abstract class AbstractRegistry implements Registry {
                 }
             }
         } else {
+            // 如果没有订阅服务
             // 原子类 避免在获取注册在注册中心的服务url时能够保证是最新的url集合
             final AtomicReference<List<URL>> reference = new AtomicReference<List<URL>>();
             // 通知监听器。当收到服务变更通知时触发
@@ -343,7 +344,7 @@ public abstract class AbstractRegistry implements Registry {
         if (logger.isInfoEnabled()) {
             logger.info("Subscribe: " + url);
         }
-        // 获得该消费者url 已经订阅的服务 的监听器集合
+        // 获得该消费者url 已经订lookup阅的服务 的监听器集合
         Set<NotifyListener> listeners = subscribed.get(url);
         if (listeners == null) {
             subscribed.putIfAbsent(url, new ConcurrentHashSet<NotifyListener>());
