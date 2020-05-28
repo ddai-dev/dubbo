@@ -51,6 +51,37 @@ import java.util.regex.Pattern;
  * <li>default extension is an adaptive instance</li>
  * </ul>
  *
+ * 缓存分类 （Class缓存 实例缓存）
+ *  - 普通扩展类 (扩展类)
+ *  - 包装扩展类(Wrapper) (Wrapper 没有具体实现, 只是做了通用逻辑抽象, 并且需要在构造方法中传入一个具体的扩展接口的实现)
+ *  - 自适应扩展类(Adaptive) (一个扩展接口会有多种实现类, 具体使用哪个实现类可以不写死在配 置或代码中, 在运行时，通过传入URL中的某些参数动态来确定)
+ *
+ *  Class 缓存:
+ *      Dubbo SPI获取扩展类时, 会先从缓存中读取, 如果缓存中不存在,  则加载配置文件, 根据配置把Class缓存到内存中, 并不会直接全部初始化
+ *  实例缓存:
+ *      获取缓存的 Class, 实例化并缓存
+ *
+ * Holder<Map<String, Class<?>> cachedClasses: 普通扩展类缓存，不包括自适应拓展类和 Wrapper 类
+ * Set<Class<?>> cachedWrapperClasses:  Wrapper类缓存
+ * Class<?> cachedAdaptiveClass: 自适应扩展类缓存
+ * ConcurrentMap<String, Holder<Object» cachedlnstances: 扩展名与扩展对象缓存
+ * Holder<Object> cachedAdaptivelnstance:  实例化后的自适应（Adaptive）扩展对象，只能同时存在一个
+ * ConcurrentMap<Class<?>, String> cachedNames: 扩展类与扩展名缓存
+ * ConcurrentMap<Class<?>, ExtensionLoader<?>> EXTENSIONLOADERS: 扩展类与对应的扩展类加载器缓存
+ * ConcurrentMap<Class<?>, Object> EXTENSIONJNSTANCES: 扩展类与类初始化后的实例
+ * Map<String, Activate> cachedActivates: 扩展名的缓存
+ *
+ *  扩展类四种特性
+ *  - 自动包装 (这个扩展类包含其它扩展点作为构造函数的参数 ProtocolFilterWrapper)
+ *  - 自动加载 (set 注入)
+ *  - 自适应 (通过 URL 参数来确定使用哪个具体的实现类, 只能选择一个)
+ *  - 自动激活 (Activate 某个扩展类的多个实现类需要同时启用 Filter)
+ *
+ *  逻辑入口
+ *      - getExtension 普通类扩展
+ *      - getAdaptiveExtension 自适应扩展类
+ *      - getActivateExtension 获取自动激活的扩展类
+ *
  * @see <a href="http://java.sun.com/j2se/1.5.0/docs/guide/jar/jar.html#Service%20Provider">Service Provider in Java 5</a>
  * @see com.alibaba.dubbo.common.extension.SPI
  * @see com.alibaba.dubbo.common.extension.Adaptive
@@ -228,7 +259,7 @@ public class ExtensionLoader<T> {
      * @see #getActivateExtension(com.alibaba.dubbo.common.URL, String[], String)
      */
     /**
-     * 获得符合自动激活条件的扩展实现类对象集合（适用含有value和group条件的自动激活类）
+     * 根据不同的条件同时激活多个普通扩展类
      * @param url
      * @param key
      * @param group
@@ -889,6 +920,8 @@ public class ExtensionLoader<T> {
                 Activate activate = clazz.getAnnotation(Activate.class);
                 //如果是自动激活的实现类，则加入到缓存
                 if (activate != null) {
+                    // 如果类上有 Activate 注解，则使用 names 数组的第一个元素作为键，
+                    // 存储 name 到 Activate 注解对象的映射关系
                     cachedActivates.put(names[0], activate);
                 }
                 for (String n : names) {

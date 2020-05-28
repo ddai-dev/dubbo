@@ -1,4 +1,4 @@
-ExtensionLoader
+* ExtensionLoader
     -> createAdaptiveExtensionClass() 查看对应 Protocol$Adaptive 的源码, 复制出来就可以进行 debug
 
     ->getExtension
@@ -6,8 +6,10 @@ ExtensionLoader
             ->有: 构造函数是对应的接口 StubProxyFactoryWrapper ( 实现了 AOP)
             ->无: 直接返回对象
         ->Inject 反射变量对象, 从对象 objectFactory 注入所有的 SPI 扩展
-* 导出服务
-- 检查参数, 组装 URL
-- 导出服务(包含导出服务到本地 (JVM)，和导出服务到远程两个过程)
-- 第三部分是向注册中心注册服务
+* com.alibaba.dubbo.rpc.Invoker
+Invoker invoker= JavassistProxyFactory(default)#getInvoker
+invoker#invoke => AbstractProxyInvoker#doInvoke 就是调用真正的对象
+
+* Protocol.export 含义, 把各种协议导出，让消费端可以使用
+
 

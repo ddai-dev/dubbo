@@ -66,6 +66,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
     private int idleTimeout = 600; //600 seconds
 
     public AbstractServer(URL url, ChannelHandler handler) throws RemotingException {
+        // 调用父类构造方法，这里就不用跟进去了，没什么复杂逻辑
         super(url, handler);
         // 从url中获得本地地址
         localAddress = getUrl().toInetSocketAddress();

@@ -339,15 +339,15 @@ public class DubboProtocol extends AbstractProtocol {
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
         URL url = invoker.getUrl();
 
-        // export service.
-        // 得到服务key  group+"/"+serviceName+":"+serviceVersion+":"+port
+        // 获取服务标识，理解成服务坐标也行。由服务组名，服务名，服务版本号以及端口组成。比如：
+        // demoGroup/com.alibaba.dubbo.demo.DemoService:1.0.1:20880
         String key = serviceKey(url);
         // 创建exporter
         DubboExporter<T> exporter = new DubboExporter<T>(invoker, key, exporterMap);
         // 加入到集合
         exporterMap.put(key, exporter);
 
-        //export an stub service for dispatching event
+        //export an stub service for dispatching event (本地存根相关代码)
         Boolean isStubSupportEvent = url.getParameter(Constants.STUB_EVENT_KEY, Constants.DEFAULT_STUB_EVENT);
         Boolean isCallbackservice = url.getParameter(Constants.IS_CALLBACK_SERVICE, false);
         // 如果是本地存根事件而不是回调服务
@@ -379,7 +379,7 @@ public class DubboProtocol extends AbstractProtocol {
      * @param url
      */
     private void openServer(URL url) {
-        // find server.
+        // find server. key = ip:port
         String key = url.getAddress();
         //client can export a service which's only for server to invoke
         // 客户端是否可以暴露仅供服务器调用的服务
@@ -393,48 +393,51 @@ public class DubboProtocol extends AbstractProtocol {
                 serverMap.put(key, createServer(url));
             } else {
                 // server supports reset, use together with override
-                // 重置
+                // 服务器已创建，则根据 url 中的配置重置服务器
                 server.reset(url);
             }
         }
     }
 
     /**
-     * 创建服务器
+     * 1. 第一是检测是否存在 server 参数所代表的 Transporter 拓展, 不存在则抛出异常
+     * 2. 第二是创建服务器实例
+     * 3. 第三是检测是否支持 client 参数所表示的 Transporter 拓展，不存在也是抛出异常
+     *
      * @param url
      * @return
      */
     private ExchangeServer createServer(URL url) {
         // send readonly event when server closes, it's enabled by default
-        // 服务器关闭时发送readonly事件，默认情况下启用
+        // 服务器关闭时发送readonly事件，默认情况下启用 (添加心跳检测配置到 url 中)
         url = url.addParameterIfAbsent(Constants.CHANNEL_READONLYEVENT_SENT_KEY, Boolean.TRUE.toString());
         // enable heartbeat by default
         // 心跳默认间隔一分钟
         url = url.addParameterIfAbsent(Constants.HEARTBEAT_KEY, String.valueOf(Constants.DEFAULT_HEARTBEAT));
-        // 获得远程通讯服务端实现方式，默认用netty3
+        // 获得远程通讯服务端实现方式，默认用netty
         String str = url.getParameter(Constants.SERVER_KEY, Constants.DEFAULT_REMOTING_SERVER);
 
         /**
-         * 如果没有该配置，则抛出异常
+         * 如果没有该配置，则抛出异常(com.alibaba.dubbo.remoting.Transporter 配置文件中是否存在 key = xxx)
          */
         if (str != null && str.length() > 0 && !ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(str))
             throw new RpcException("Unsupported server type: " + str + ", url: " + url);
 
         /**
-         * 添加编解码器DubboCodec实现
+         * 添加编码解码器参数
          */
         url = url.addParameter(Constants.CODEC_KEY, DubboCodec.NAME);
         ExchangeServer server;
         try {
-            // 启动服务器
+            // 创建 ExchangeServer
             server = Exchangers.bind(url, requestHandler);
         } catch (RemotingException e) {
             throw new RpcException("Fail to start server(url: " + url + ") " + e.getMessage(), e);
         }
-        // 获得客户端侧设置的远程通信方式
+        // 获取 client 参数，可指定 netty，mina
         str = url.getParameter(Constants.CLIENT_KEY);
         if (str != null && str.length() > 0) {
-            // 获得远程通信的实现集合
+            // 获取所有的 Transporter 实现类名称集合，比如 supportedTypes = [netty, mina]
             Set<String> supportedTypes = ExtensionLoader.getExtensionLoader(Transporter.class).getSupportedExtensions();
             // 如果客户端侧设置的远程通信方式不在支持的方式中，则抛出异常
             if (!supportedTypes.contains(str)) {
@@ -544,7 +547,7 @@ public class DubboProtocol extends AbstractProtocol {
      */
     private ExchangeClient getSharedClient(URL url) {
         String key = url.getAddress();
-        // 从集合中取出客户端对象
+        // 从集合中取出客户端对象 (获取带有“引用计数”功能的 ExchangeClient)
         ReferenceCountExchangeClient client = referenceClientMap.get(key);
         // 如果不为空并且没关闭连接，则计数器加1，返回
         if (client != null) {

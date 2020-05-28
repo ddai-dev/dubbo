@@ -89,6 +89,10 @@ public abstract class AbstractConfig implements Serializable {
         return value;
     }
 
+    /**
+     * 把 dubbo.properties 开始的属性填充到 AbstractConfig 的子类中
+     * @param config
+     */
     protected static void appendProperties(AbstractConfig config) {
         if (config == null) {
             return;
@@ -250,6 +254,12 @@ public abstract class AbstractConfig implements Serializable {
         appendAttributes(parameters, config, null);
     }
 
+    /**
+     * 把 prefix(如果存在) + "." +key 对象中的属性 添加到 parameters 中
+     * @param parameters
+     * @param config
+     * @param prefix
+     */
     protected static void appendAttributes(Map<Object, Object> parameters, Object config, String prefix) {
         if (config == null) {
             return;

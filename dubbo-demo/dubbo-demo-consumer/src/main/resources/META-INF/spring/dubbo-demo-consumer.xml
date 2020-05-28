@@ -26,13 +26,17 @@
     <dubbo:application name="demo-consumer"/>
 
     <!-- use multicast registry center to discover service -->
-<!--    <dubbo:registry address="multicast://127.0.0.1:1234"/>-->
+    <!--    <dubbo:registry address="multicast://127.0.0.1:1234"/>-->
     <dubbo:registry address="zookeeper://localhost:2181"/>
 
 
     <!-- generate proxy for the remote service, then demoService can be used in the same way as the
     local regular interface -->
-    <dubbo:reference id="demoService" protocol="injvm" url="localhost:20880" check="false" interface="com.alibaba.dubbo.demo.DemoService"/>
+    <!--
+        point 2 point invoke:  url="localhost:20880"
+    -->
+    <dubbo:reference id="demoService" check="false" url="localhost:20880"
+                     interface="com.alibaba.dubbo.demo.DemoService"/>
 
     <dubbo:reference id="barService" check="false" interface="com.alibaba.dubbo.demo.BarService"/>
 

@@ -55,7 +55,7 @@ public class ProtocolFilterWrapper implements Protocol {
      * @return
      */
     private static <T> Invoker<T> buildInvokerChain(final Invoker<T> invoker, String key, String group) {
-        Invoker<T> last = invoker;
+        Invoker<T> last = invoker; // invoker 其实就是最终调用的对象
         // 获得过滤器的所有扩展实现类实例集合
         List<Filter> filters = ExtensionLoader.getExtensionLoader(Filter.class).getActivateExtension(invoker.getUrl(), key, group);
         if (!filters.isEmpty()) {
